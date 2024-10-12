@@ -1,59 +1,81 @@
 #pragma once
-#include <vector>
 #include <iostream>
+#include <vector>
+#include <algorithm>
 
-class UF {
+class UnionFind {
 private:
-    std::vector<int> id; 
-    std::vector<int> sz; 
-    int cnt; 
+    std::vector<int> parent, rank;
 
 public:
-    UF(int N) : id(N), sz(N, 1), cnt(N) {
-        for (int i = 0; i < N; ++i) {
-            id[i] = i;
+    UnionFind(int n) {
+        parent.resize(n);
+        rank.resize(n, 0);
+        for (int i = 0; i < n; i++) {
+            parent[i] = i; 
         }
     }
 
-    UF(const UF&) = delete;
-    UF& operator=(const UF&) = delete;
-
-    int find(int p) {
-        int root = p;
-        while (root != id[root]) {
-            root = id[root];
+    int find(int u) {
+        if (parent[u] != u) {
+            parent[u] = find(parent[u]);
         }
-        while (p != root) {
-            int newp = id[p];
-            id[p] = root;
-            p = newp;
-        }
-        return root;
+        return parent[u];
     }
 
-    void merge(int x, int y) {
-        int rootX = find(x);
-        int rootY = find(y);
-
-        if (rootX == rootY) return;
-
-        if (sz[rootX] < sz[rootY]) {
-            id[rootX] = rootY;
-            sz[rootY] += sz[rootX];
+    void union_sets(int u, int v) {
+        int root_u = find(u);
+        int root_v = find(v);
+        if (root_u != root_v) {
+            if (rank[root_u] < rank[root_v]) {
+                parent[root_u] = root_v;
+            }
+            else if (rank[root_u] > rank[root_v]) {
+                parent[root_v] = root_u;
+            }
+            else {
+                parent[root_v] = root_u;
+                rank[root_u]++;
+            }
         }
-        else {
-            id[rootY] = rootX;
-            sz[rootX] += sz[rootY];
-        }
+    }
+};
 
-        --cnt;
+struct Edge {
+    int u, v, weight;
+
+    bool operator<(const Edge& other) const {
+        return weight < other.weight;
+    }
+};
+
+class KruskalMST {
+private:
+    std::vector<Edge> edges;
+    int numVertices;
+
+public:
+    KruskalMST(int vertices) : numVertices(vertices) {}
+
+    void addEdge(int u, int v, int weight) {
+        edges.push_back({ u, v, weight });
     }
 
-    bool connected(int x, int y) {
-        return find(x) == find(y);
-    }
+    void findMST() {
+        std::sort(edges.begin(), edges.end()); 
+        UnionFind uf(numVertices);
+        std::vector<Edge> mstEdges;
 
-    int count() const {
-        return cnt;
+        for (const auto& edge : edges) {
+            if (uf.find(edge.u) != uf.find(edge.v)) {
+                mstEdges.push_back(edge);
+                uf.union_sets(edge.u, edge.v);
+            }
+        }
+
+        std::cout << "Edges in the Minimum Spanning Tree:\n";
+        for (const auto& edge : mstEdges) {
+            std::cout << edge.u << " - " << edge.v << " : " << edge.weight << '\n';
+        }
     }
 };
