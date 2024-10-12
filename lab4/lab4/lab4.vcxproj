@@ -128,6 +128,10 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="lab4.cpp" />
+    <ClCompile Include="UF.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="UF.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
